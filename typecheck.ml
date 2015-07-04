@@ -38,6 +38,7 @@ let rec type_of ty_env t =
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
     assert false 
+  | Builtin_term (ty, _, _) -> ty
   | App_term (f, ts) ->
     let f_type = type_of ty_env f in
     let tys = List.map ~f:(type_of ty_env) ts in

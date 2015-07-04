@@ -5,6 +5,7 @@ type t =
 | Num_term of int
 | Lam_term of (Var.t * Type.t) list * t
 | Closure_term of Var.t list * env * t
+| Builtin_term of Type.t * Var.t list * (env -> t)
 | App_term of t * t list
 | Unit_term
 | Seq_term of t * t
