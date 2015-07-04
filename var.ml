@@ -1,3 +1,3 @@
 open Core.Std
 
-type t = int with sexp
+type t = string with sexp

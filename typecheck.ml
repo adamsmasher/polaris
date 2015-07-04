@@ -31,10 +31,9 @@ let rec type_of ty_env t =
   match t with
   | Var_term x -> Type_environment.lookup ty_env x
   | Num_term _ -> Num_type
-  | Lam_term (tys, body) ->
-    let extended_type_env =
-      List.fold ~f:Type_environment.extend ~init:ty_env tys
-    in
+  | Lam_term (args, body) ->
+    let extended_type_env = Type_environment.extend_many ty_env args in
+    let tys = List.map ~f:snd args in
     Fun_type (tys, (type_of extended_type_env body))
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
@@ -49,10 +48,11 @@ let rec type_of ty_env t =
   | Seq_term (t1, t2) ->
     match_type (type_of ty_env t1) Unit_type;
     type_of ty_env t2
-  | Let_term (t1, t2) ->
-    type_of
-      (Type_environment.extend ty_env (type_of ty_env t1))
-      t2
+  | Let_term (var, t1, t2) ->
+    let extended_env =
+      Type_environment.extend ty_env (var, (type_of ty_env t1))
+    in
+    type_of extended_env t2
   | Tuple_term ts -> Tuple_type (List.map ~f:(type_of ty_env) ts)
   | Array_term (ty, ts) ->
     Array.iter ts ~f:(fun t -> match_type ty (type_of ty_env t));
