@@ -6,3 +6,5 @@ type t =
 | Tuple_type of t list
 | Array_type of t
 with sexp
+
+val to_string : t -> string

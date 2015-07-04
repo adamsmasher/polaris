@@ -15,6 +15,8 @@ type t =
 | Array_term of Type.t * t array
 with sexp
 
+val to_string : t -> string
+
 module Environment : sig
   val empty : env
   val lookup : env -> Var.t -> t

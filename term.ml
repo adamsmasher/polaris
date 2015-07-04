@@ -16,6 +16,27 @@ type t =
 and env = (Var.t * t) list
 with sexp
 
+let rec to_string = function
+| Num_term n -> Int.to_string n
+| String_term str -> "\"" ^ str ^ "\""
+| Unit_term -> "()"
+| Tuple_term ts ->
+  "(" ^ String.concat ~sep:", " (List.map ~f:to_string ts) ^ ")"
+| Array_term (_, ts) ->
+  "[" ^ String.concat_array ~sep:", " (Array.map ~f:to_string ts) ^ "]"
+| Var_term v -> v
+| Seq_term (t1, t2) -> (to_string t1) ^ "; " ^ (to_string t2)
+| Lam_term _ -> "<function>"
+| Closure_term _ -> "<function>"
+| Builtin_term _ -> "<builtin>"
+| App_term (f, args) ->
+  (to_string f)
+  ^ "("
+  ^ String.concat ~sep:", " (List.map ~f:to_string args)
+  ^ ")"
+| Let_term (v, t1, t2) ->
+  "let " ^ v ^ " = " ^ (to_string t1) ^ " in " ^ (to_string t2)
+
 module Environment = struct
   let empty = []
   let lookup t v = List.Assoc.find_exn t v
