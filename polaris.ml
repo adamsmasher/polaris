@@ -11,10 +11,7 @@ let run_file filename =
   List.iter sexps ~f:(fun term ->
     let ty = Typecheck.type_of ty_env term in
     let result = Eval.eval env term in
-    Printf.printf "%s : %s\n"
-      (Sexp.to_string (Term.sexp_of_t result))
-      (Sexp.to_string (Type.sexp_of_t ty)))
-
+    Printf.printf "%s : %s\n" (Term.to_string result) (Type.to_string ty))
 
 let command =
   Command.basic
