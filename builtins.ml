@@ -1,3 +1,5 @@
+open Core.Std
+
 let get_builtin_ty = function
 | Term.Builtin_term (ty, _, _) -> ty
 | _ -> assert false
@@ -15,13 +17,22 @@ let sub_int = make_bin_op (-)
 let mul_int = make_bin_op ( * ) 
 let div_int = make_bin_op (/)
 
+let int_to_string =
+  let ty = Type.(Fun_type ([Num_type], String_type)) in
+  Term.(Builtin_term (ty, ["x"], fun env ->
+    let t = Environment.lookup env "x" in
+    match t with
+    | Num_term n -> String_term (Int.to_string n)
+    | _ -> assert false))
+
 let default_type_environment =
   let open Type_environment in
   extend_many empty [
     "_add_int", get_builtin_ty add_int;
     "_sub_int", get_builtin_ty sub_int;
     "_mul_int", get_builtin_ty mul_int;
-    "_div_int", get_builtin_ty div_int
+    "_div_int", get_builtin_ty div_int;
+    "_int_to_string", get_builtin_ty int_to_string;
   ] 
 
 let default_environment =
@@ -30,5 +41,6 @@ let default_environment =
     "_add_int", add_int;
     "_sub_int", sub_int;
     "_mul_int", mul_int;
-    "_div_int", div_int
+    "_div_int", div_int;
+    "_int_to_string", int_to_string;
   ]
