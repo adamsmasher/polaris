@@ -9,16 +9,22 @@ let rec match_type ty1 ty2 =
     try List.iter2_exn ~f:match_type tys1 tys2
     with Invalid_argument _ -> raise (Type_error (ty1, ty2))
   in
+  let error () = raise (Type_error (ty1, ty2)) in
   match ty1, ty2 with
   | Num_type, Num_type -> ()
+  | Num_type, _ -> error ()
   | String_type, String_type -> ()
+  | String_type, _ -> error ()
   | Fun_type (tys1, return_ty1), Fun_type (tys2, return_ty2) ->
     match_types tys1 tys2;
     match_type return_ty1 return_ty2
+  | Fun_type _, _ -> error ()
   | Unit_type, Unit_type -> ()
+  | Unit_type, _ -> error ()
   | Tuple_type tys1, Tuple_type tys2 -> match_types tys1 tys2
+  | Tuple_type _, _ -> error ()
   | Array_type ty1, Array_type ty2 -> match_type ty1 ty2
-  | _, _ -> raise (Type_error (ty1, ty2))
+  | Array_type _, _ -> error ()
 
 let return_type t =
   let open Type in
