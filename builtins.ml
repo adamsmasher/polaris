@@ -25,6 +25,14 @@ let int_to_string =
     | Num_term n -> String_term (Int.to_string n)
     | _ -> assert false))
 
+let print_string =
+  let ty = Type.(Fun_type ([String_type], Unit_type)) in
+  Term.(Builtin_term (ty, ["str"], fun env ->
+    let t = Environment.lookup env "str" in
+    match t with
+    | String_term str -> print_string str; Unit_term
+    | _ -> assert false))
+
 let default_type_environment =
   let open Type_environment in
   extend_many empty [
@@ -33,6 +41,7 @@ let default_type_environment =
     "_mul_int", get_builtin_ty mul_int;
     "_div_int", get_builtin_ty div_int;
     "_int_to_string", get_builtin_ty int_to_string;
+    "_print_string", get_builtin_ty print_string;
   ] 
 
 let default_environment =
@@ -43,4 +52,5 @@ let default_environment =
     "_mul_int", mul_int;
     "_div_int", div_int;
     "_int_to_string", int_to_string;
+    "_print_string", print_string;
   ]
