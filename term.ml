@@ -3,6 +3,7 @@ open Core.Std
 type t =
 | Var_term of Var.t
 | Num_term of int
+| String_term of string
 | Lam_term of (Var.t * Type.t) list * t
 | Closure_term of Var.t list * env * t
 | Builtin_term of Type.t * Var.t list * (env -> t)

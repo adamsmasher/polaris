@@ -11,6 +11,7 @@ let rec match_type ty1 ty2 =
   in
   match ty1, ty2 with
   | Num_type, Num_type -> ()
+  | String_type, String_type -> ()
   | Fun_type (tys1, return_ty1), Fun_type (tys2, return_ty2) ->
     match_types tys1 tys2;
     match_type return_ty1 return_ty2
@@ -31,6 +32,7 @@ let rec type_of ty_env t =
   match t with
   | Var_term x -> Type_environment.lookup ty_env x
   | Num_term _ -> Num_type
+  | String_term _ -> String_type
   | Lam_term (args, body) ->
     let extended_type_env = Type_environment.extend_many ty_env args in
     let tys = List.map ~f:snd args in

@@ -5,6 +5,7 @@ let rec eval env t =
   match t with
   | Var_term x -> Environment.lookup env x
   | Num_term _ as n -> n
+  | String_term _ as s -> s
   | Lam_term (args, body) ->
     let arg_names = List.map ~f:fst args in
     Closure_term (arg_names, env, body)
