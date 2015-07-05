@@ -33,6 +33,16 @@ let print_string =
     | String_term str -> print_string str; Unit_term
     | _ -> assert false))
 
+let array_length =
+  let ty =
+    Type.(Fun_type ([Forall_type (Array_type (Var_type 0))], Num_type))
+  in
+  Term.(Builtin_term (ty, ["array"], fun env ->
+    let t = Environment.lookup env "array" in
+    match t with
+    | Array_term (_, ts) -> Num_term (Array.length ts)
+    | _ -> assert false))
+
 let default_type_environment =
   let open Type_environment in
   extend_many empty [
@@ -42,6 +52,7 @@ let default_type_environment =
     "_div_int", get_builtin_ty div_int;
     "_int_to_string", get_builtin_ty int_to_string;
     "_print_string", get_builtin_ty print_string;
+    "_array_length", get_builtin_ty array_length;
   ] 
 
 let default_environment =
@@ -53,4 +64,5 @@ let default_environment =
     "_div_int", div_int;
     "_int_to_string", int_to_string;
     "_print_string", print_string;
+    "_array_length", array_length;
   ]
