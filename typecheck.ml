@@ -25,6 +25,8 @@ let rec match_type ty1 ty2 =
   | Tuple_type _, _ -> error ()
   | Array_type ty1, Array_type ty2 -> match_type ty1 ty2
   | Array_type _, _ -> error ()
+  | Forall_type ty1, ty2 -> match_type ty1 ty2
+  | Var_type _, _ -> ()
 
 let return_type t =
   let open Type in
