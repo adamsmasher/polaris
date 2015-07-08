@@ -39,6 +39,8 @@ let rec type_of ty_env t =
   let open Type in
   match t with
   | Var_term x -> Type_environment.lookup ty_env x
+  (* rec holes are only created during evaluation *)
+  | Rec_term _ -> assert false
   | Num_term _ -> Num_type
   | String_term _ -> String_type
   | Lam_term (args, body) ->
@@ -64,6 +66,12 @@ let rec type_of ty_env t =
       Type_environment.extend ty_env (var, (type_of ty_env t1))
     in
     type_of extended_env t2
+  | Letrec_term (var, ty, t1, t2) ->
+    let extended_env = Type_environment.extend ty_env (var, ty) in
+    let ty1 = type_of extended_env t1 in
+    match_type ty ty1;
+    let ty2 = type_of extended_env t2 in
+    ty2
   | Tuple_term ts -> Tuple_type (List.map ~f:(type_of ty_env) ts)
   | Array_term (ty, ts) ->
     Array.iter ts ~f:(fun t -> match_type ty (type_of ty_env t));

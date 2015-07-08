@@ -2,6 +2,7 @@ type env
 
 type t =
 | Var_term of Var.t
+| Rec_term of t option ref
 | Num_term of int
 | String_term of string
 | Lam_term of (Var.t * Type.t) list * t
@@ -11,6 +12,7 @@ type t =
 | Unit_term
 | Seq_term of t * t
 | Let_term of Var.t * t * t
+| Letrec_term of Var.t * Type.t * t * t
 | Tuple_term of t list
 | Array_term of Type.t * t array
 with sexp

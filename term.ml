@@ -2,6 +2,7 @@ open Core.Std
 
 type t =
 | Var_term of Var.t
+| Rec_term of t option ref
 | Num_term of int
 | String_term of string
 | Lam_term of (Var.t * Type.t) list * t
@@ -11,6 +12,7 @@ type t =
 | Unit_term
 | Seq_term of t * t
 | Let_term of Var.t * t * t
+| Letrec_term of Var.t * Type.t * t * t
 | Tuple_term of t list
 | Array_term of Type.t * t array
 and env = (Var.t * t) list
@@ -25,6 +27,11 @@ let rec to_string = function
 | Array_term (_, ts) ->
   "[" ^ String.concat_array ~sep:", " (Array.map ~f:to_string ts) ^ "]"
 | Var_term v -> v
+| Rec_term r ->
+  begin match !r with
+  | None -> "<rec hole>"
+  | Some t -> "<rec " ^ (to_string t) ^ ">"
+  end
 | Seq_term (t1, t2) -> (to_string t1) ^ "; " ^ (to_string t2)
 | Lam_term _ -> "<function>"
 | Closure_term _ -> "<function>"
@@ -36,6 +43,9 @@ let rec to_string = function
   ^ ")"
 | Let_term (v, t1, t2) ->
   "let " ^ v ^ " = " ^ (to_string t1) ^ " in " ^ (to_string t2)
+| Letrec_term (v, ty, t1, t2) ->
+  "letrec " ^ v ^ " : " ^ (Type.to_string ty) ^ " = "
+    ^ (to_string t1) ^ " in " ^ (to_string t2)
 
 module Environment = struct
   let empty = []
