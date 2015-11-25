@@ -6,6 +6,7 @@ type t =
 | Num_term of int
 | String_term of string
 | Lam_term of Type.t list * t
+| Forall_term of Type_constraint.t list * t
 | Closure_term of env * t
 | Builtin_term of Type.t * (env -> t)
 | App_term of t * t list

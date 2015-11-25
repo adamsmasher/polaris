@@ -6,6 +6,7 @@ type t =
 | Num_term of int
 | String_term of string
 | Lam_term of Type.t list * t
+| Forall_term of Type_constraint.t list * t
 | Closure_term of env * t
 | Builtin_term of Type.t * (env -> t)
 | App_term of t * t list
@@ -34,6 +35,11 @@ let rec to_string = function
   end
 | Seq_term (t1, t2) -> (to_string t1) ^ "; " ^ (to_string t2)
 | Lam_term _ -> "<function>"
+| Forall_term (ty_constraints, body) ->
+  let constraints =
+    String.concat ~sep:" " (List.map ~f:(Fn.const "a") ty_constraints)
+  in
+  "forall " ^ constraints ^ ". " ^ (to_string body)
 | Closure_term _ -> "<function>"
 | Builtin_term _ -> "<builtin>"
 | App_term (f, args) ->

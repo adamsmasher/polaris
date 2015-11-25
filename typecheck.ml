@@ -2,6 +2,21 @@ open Core.Std
 
 exception Type_error of Type.t * Type.t
 exception Invalid_application of Type.t
+exception Forall_length_mismatch
+exception Ty_constraint_error of Type_constraint.t list * Type_constraint.t list
+
+let match_constraints ty_constraints1 ty_constraints2 =
+  let rec f ty_constraints1 ty_constraints2 =
+    match ty_constraints1, ty_constraints2 with
+    | [], [] -> ()
+    | ty_constraint1::ty_constraints1, ty_constraint2::ty_constraints2 ->
+      Type_constraint.match_constraints ty_constraint1 ty_constraint2;
+      f ty_constraints1 ty_constraints2
+    | _, _ -> raise Forall_length_mismatch
+  in
+  try f ty_constraints1 ty_constraints2
+  with Forall_length_mismatch ->
+    raise (Ty_constraint_error (ty_constraints1, ty_constraints2))
 
 let rec match_type ty1 ty2 =
   let open Type in
@@ -25,7 +40,10 @@ let rec match_type ty1 ty2 =
   | Tuple_type _, _ -> error ()
   | Array_type ty1, Array_type ty2 -> match_type ty1 ty2
   | Array_type _, _ -> error ()
-  | Forall_type ty1, ty2 -> match_type ty1 ty2
+  | Forall_type (ty_constraints1, ty1), Forall_type (ty_constraints2, ty2) ->
+    match_constraints ty_constraints1 ty_constraints2;
+    match_type ty1 ty2
+  | Forall_type _, _ -> error ()
   | Var_type _, _ -> ()
 
 let return_type t =
@@ -46,6 +64,8 @@ let rec type_of ty_env t =
   | Lam_term (param_tys, body) ->
     let extended_type_env = Type_environment.extend_many ty_env param_tys in
     Fun_type (param_tys, (type_of extended_type_env body))
+  | Forall_term (ty_constraints, body) ->
+    Forall_type (ty_constraints, type_of ty_env body)
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
     assert false 

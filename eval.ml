@@ -12,6 +12,7 @@ let rec eval env t =
   | Num_term _ as n -> n
   | String_term _ as s -> s
   | Lam_term (_, body) -> Closure_term (env, body)
+  | Forall_term _ as f -> f
   | Closure_term _ as f -> f
   | Builtin_term _ as f -> f
   | Unit_term -> Unit_term
