@@ -19,5 +19,4 @@ let command =
     spec
     (fun filename () -> run_file filename)
 
-let () =
-  Command.run command
+let () = Command.run command
