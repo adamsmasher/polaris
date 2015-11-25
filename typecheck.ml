@@ -43,14 +43,13 @@ let rec type_of ty_env t =
   | Rec_term _ -> assert false
   | Num_term _ -> Num_type
   | String_term _ -> String_type
-  | Lam_term (params, body) ->
-    let extended_type_env = Type_environment.extend_many ty_env params in
-    let tys = List.map ~f:snd params in
-    Fun_type (tys, (type_of extended_type_env body))
+  | Lam_term (param_tys, body) ->
+    let extended_type_env = Type_environment.extend_many ty_env param_tys in
+    Fun_type (param_tys, (type_of extended_type_env body))
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
     assert false 
-  | Builtin_term (ty, _, _) -> ty
+  | Builtin_term (ty, _) -> ty
   | App_term (f, ts) ->
     let f_type = type_of ty_env f in
     let tys = List.map ~f:(type_of ty_env) ts in
@@ -61,13 +60,11 @@ let rec type_of ty_env t =
   | Seq_term (t1, t2) ->
     match_type (type_of ty_env t1) Unit_type;
     type_of ty_env t2
-  | Let_term (var, t1, t2) ->
-    let extended_env =
-      Type_environment.extend ty_env (var, (type_of ty_env t1))
-    in
+  | Let_term (t1, t2) ->
+    let extended_env = Type_environment.extend ty_env (type_of ty_env t1) in
     type_of extended_env t2
-  | Letrec_term (var, ty, t1, t2) ->
-    let extended_env = Type_environment.extend ty_env (var, ty) in
+  | Letrec_term (ty, t1, t2) ->
+    let extended_env = Type_environment.extend ty_env ty in
     let ty1 = type_of extended_env t1 in
     match_type ty ty1;
     let ty2 = type_of extended_env t2 in
