@@ -5,7 +5,7 @@ let get_builtin_ty = function
 | _ -> assert false
 
 let make_bin_op op =
-  let ty = Type.(Fun_type ([Num_type; Num_type], Num_type)) in
+  let ty = Type.(Fun_type ([], [Num_type; Num_type], Num_type)) in
   Term.(Builtin_term (ty, fun env ->
     let (t1, t2) = Environment.(lookup env 0, lookup env 1) in
     match t1, t2 with
@@ -18,7 +18,7 @@ let mul_int = make_bin_op ( * )
 let div_int = make_bin_op (/)
 
 let int_to_string =
-  let ty = Type.(Fun_type ([Num_type], String_type)) in
+  let ty = Type.(Fun_type ([], [Num_type], String_type)) in
   Term.(Builtin_term (ty, fun env ->
     let t = Environment.lookup env 0 in
     match t with
@@ -26,7 +26,7 @@ let int_to_string =
     | _ -> assert false))
 
 let print_string =
-  let ty = Type.(Fun_type ([String_type], Unit_type)) in
+  let ty = Type.(Fun_type ([], [String_type], Unit_type)) in
   Term.(Builtin_term (ty, fun env ->
     let t = Environment.lookup env 0 in
     match t with
@@ -34,7 +34,7 @@ let print_string =
     | _ -> assert false))
 
 let string_length =
-  let ty = Type.(Fun_type ([String_type], Num_type)) in
+  let ty = Type.(Fun_type ([], [String_type], Num_type)) in
   Term.(Builtin_term (ty, fun env ->
     let t = Environment.lookup env 0 in
     match t with
@@ -43,7 +43,7 @@ let string_length =
 
 let array_length =
   let ty =
-    Type.(Fun_type ([Forall_type (Array_type (Var_type 0))], Num_type))
+    Type.(Fun_type ([()], [Array_type (Var_type 0)], Num_type))
   in
   Term.(Builtin_term (ty, fun env ->
     let t = Environment.lookup env 0 in

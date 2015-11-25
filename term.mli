@@ -5,11 +5,10 @@ type t =
 | Rec_term of t option ref
 | Num_term of int
 | String_term of string
-| Lam_term of Type.t list * t
-| Forall_term of Type_constraint.t list * t
+| Lam_term of Type_constraint.t list * Type.t list * t
 | Closure_term of env * t
 | Builtin_term of Type.t * (env -> t)
-| App_term of t * t list
+| App_term of t * Type.t list * t list
 | Unit_term
 | Seq_term of t * t
 | Let_term of t * t

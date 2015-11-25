@@ -30,7 +30,9 @@ let rec match_type ty1 ty2 =
   | Num_type, _ -> error ()
   | String_type, String_type -> ()
   | String_type, _ -> error ()
-  | Fun_type (tys1, return_ty1), Fun_type (tys2, return_ty2) ->
+  | Fun_type (ty_constraints1, tys1, return_ty1),
+    Fun_type (ty_constraints2, tys2, return_ty2) ->
+    match_constraints ty_constraints1 ty_constraints2;
     match_types tys1 tys2;
     match_type return_ty1 return_ty2
   | Fun_type _, _ -> error ()
@@ -40,17 +42,43 @@ let rec match_type ty1 ty2 =
   | Tuple_type _, _ -> error ()
   | Array_type ty1, Array_type ty2 -> match_type ty1 ty2
   | Array_type _, _ -> error ()
-  | Forall_type (ty_constraints1, ty1), Forall_type (ty_constraints2, ty2) ->
-    match_constraints ty_constraints1 ty_constraints2;
-    match_type ty1 ty2
-  | Forall_type _, _ -> error ()
   | Var_type _, _ -> ()
 
 let return_type t =
   let open Type in
   match t with
-  | Fun_type (_, return_ty) -> return_ty
+  | Fun_type (_, _, return_ty) -> return_ty
   | ty -> raise (Invalid_application ty)
+
+let rec substitute ty n = let open Type in function
+| Num_type -> Num_type
+| String_type -> String_type
+| Fun_type (ty_constraints, param_tys, return_ty) ->
+  let n' = n + (List.length ty_constraints) in
+  Fun_type
+    (ty_constraints,
+     List.map ~f:(substitute ty n') param_tys,
+     substitute ty n' return_ty)
+| Unit_type -> Unit_type
+| Tuple_type tys -> Tuple_type (List.map ~f:(substitute ty n) tys)
+| Array_type ty' -> Array_type (substitute ty n ty')
+| Var_type n' when n = n' -> ty
+| Var_type _ as ty -> ty
+
+let apply_tys tys = let open Type in function
+| Fun_type (ty_constraints, param_tys, return_type) ->
+  if (List.length tys) <> (List.length ty_constraints) then
+    raise Forall_length_mismatch;
+  let param_tys =
+    List.map param_tys ~f:(fun param_ty ->
+      List.fold tys ~init:param_ty ~f:(fun param_ty ty -> substitute ty 0 param_ty))
+  in
+  let return_type =
+    List.fold tys ~init:return_type ~f:(fun return_type ty ->
+      substitute ty 0 return_type)
+  in
+  Fun_type ([], param_tys, return_type)
+| ty -> raise (Invalid_application ty)
 
 let rec type_of ty_env t =
   let open Term in
@@ -61,20 +89,18 @@ let rec type_of ty_env t =
   | Rec_term _ -> assert false
   | Num_term _ -> Num_type
   | String_term _ -> String_type
-  | Lam_term (param_tys, body) ->
+  | Lam_term (ty_constraints, param_tys, body) ->
     let extended_type_env = Type_environment.extend_many ty_env param_tys in
-    Fun_type (param_tys, (type_of extended_type_env body))
-  | Forall_term (ty_constraints, body) ->
-    Forall_type (ty_constraints, type_of ty_env body)
+    Fun_type (ty_constraints, param_tys, (type_of extended_type_env body))
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
     assert false 
   | Builtin_term (ty, _) -> ty
-  | App_term (f, ts) ->
-    let f_type = type_of ty_env f in
-    let tys = List.map ~f:(type_of ty_env) ts in
+  | App_term (f, tys, ts) ->
+    let f_type = apply_tys tys (type_of ty_env f) in
+    let arg_tys = List.map ~f:(type_of ty_env) ts in
     let return_type = return_type f_type in
-    match_type f_type (Fun_type (tys, return_type));
+    match_type f_type (Fun_type ([], arg_tys, return_type));
     return_type
   | Unit_term -> Unit_type
   | Seq_term (t1, t2) ->

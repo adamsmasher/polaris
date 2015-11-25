@@ -11,8 +11,7 @@ let rec eval env t =
     end
   | Num_term _ as n -> n
   | String_term _ as s -> s
-  | Lam_term (_, body) -> Closure_term (env, body)
-  | Forall_term _ as f -> f
+  | Lam_term (_, _, body) -> Closure_term (env, body)
   | Closure_term _ as f -> f
   | Builtin_term _ as f -> f
   | Unit_term -> Unit_term
@@ -29,7 +28,7 @@ let rec eval env t =
     eval (Environment.extend env v) t2
   | Tuple_term ts -> Tuple_term (List.map ~f:(eval env) ts)
   | Array_term (ty, ts) -> Array_term (ty, Array.map ~f:(eval env) ts)
-  | App_term (t, ts) ->
+  | App_term (t, _, ts) ->
     let args = List.map ~f:(eval env) ts in
     match eval env t with
     | Closure_term (env, body) -> eval (Environment.extend_many env args) body
