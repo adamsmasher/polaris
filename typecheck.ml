@@ -43,9 +43,9 @@ let rec type_of ty_env t =
   | Rec_term _ -> assert false
   | Num_term _ -> Num_type
   | String_term _ -> String_type
-  | Lam_term (args, body) ->
-    let extended_type_env = Type_environment.extend_many ty_env args in
-    let tys = List.map ~f:snd args in
+  | Lam_term (params, body) ->
+    let extended_type_env = Type_environment.extend_many ty_env params in
+    let tys = List.map ~f:snd params in
     Fun_type (tys, (type_of extended_type_env body))
   | Closure_term _ ->
     (* closures can only be created during evaluation *)
