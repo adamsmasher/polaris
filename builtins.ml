@@ -76,3 +76,14 @@ let default_environment =
     array_length;
     string_length;
   ]
+
+let default_labels = List.rev [
+  "_add_int";
+  "_sub_int";
+  "_mul_int";
+  "_div_int";
+  "_int_to_string";
+  "_print_string";
+  "_array_length";
+  "_string_length";
+]

@@ -15,7 +15,6 @@ type t =
 | Letrec_term of Type.t * t * t
 | Tuple_term of t list
 | Array_term of Type.t * t array
-with sexp
 
 val to_string : t -> string
 

@@ -16,7 +16,6 @@ type t =
 | Tuple_term of t list
 | Array_term of Type.t * t array
 and env = t list
-with sexp
 
 let rec to_string = function
 | Num_term n -> Int.to_string n
